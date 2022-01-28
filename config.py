@@ -23,7 +23,7 @@ DATABASE_URI = os.environ.get("DATABASE_URI", "")
 DATABASE_NAME = os.environ.get("DATABASE_NAME", "")
 
 # ID of users that can use the bot commands
-AUTH_USERS = set(int(x) for x in os.environ.get("AUTH_USERS", "").split())
+AUTH_USERS = {int(x) for x in os.environ.get("AUTH_USERS", "").split()}
 
 # Should bot search for document files in channels
 DOC_SEARCH = os.environ.get("DOC_SEARCH", "yes").lower()

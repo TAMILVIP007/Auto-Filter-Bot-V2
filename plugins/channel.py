@@ -44,14 +44,14 @@ async def addchannel(client: Bot, message: Message):
     try:
         if not text.startswith("@"):
             chid = int(text)
-            if not len(text) == 14:
+            if len(text) != 14:
                 await message.reply_text(
                     "Enter valid channel ID"
                 )
                 return
         elif text.startswith("@"):
             chid = text
-            if not len(chid) > 2:
+            if len(chid) <= 2:
                 await message.reply_text(
                     "Enter valid channel username"
                 )
@@ -211,14 +211,14 @@ async def deletechannelfilters(client: Bot, message: Message):
     try:
         if not text.startswith("@"):
             chid = int(text)
-            if not len(text) == 14:
+            if len(text) != 14:
                 await message.reply_text(
                     "Enter valid channel ID\n\nrun /filterstats to see connected channels"
                 )
                 return
         elif text.startswith("@"):
             chid = text
-            if not len(chid) > 2:
+            if len(chid) <= 2:
                 await message.reply_text(
                     "Enter valid channel username"
                 )
@@ -256,7 +256,7 @@ async def deletechannelfilters(client: Bot, message: Message):
         return
 
     delete_files = await deletefiles(channel_id, channel_name, group_id, group_name)
-    
+
     if delete_files:
         await intmsg.edit_text(
             "Channel deleted successfully!"
@@ -321,11 +321,9 @@ async def stats(client: Bot, message: Message):
 
     chdetails = await channeldetails(group_id)
     if chdetails:
-        n = 0
-        for eachdetail in chdetails:
+        for n, eachdetail in enumerate(chdetails):
             details = f"\n{n+1} : {eachdetail}"
             stats += details
-            n = n + 1
     else:
         stats += "\nNo channels connected in current group!!"
         await message.reply_text(stats)
@@ -341,15 +339,12 @@ async def stats(client: Bot, message: Message):
 @Client.on_message(filters.channel & (filters.document | filters.video | filters.audio))
 async def addnewfiles(client: Bot, message: Message):
 
-    media = message.document or message.video or message.audio
-
     channel_id = message.chat.id
+    media = message.document or message.video or message.audio
     file_name = media.file_name
     file_size = media.file_size
     file_id = media.file_id
     link = message.link
-
-    docs = []
     data = {
         '_id': file_id,
         'channel_id' : channel_id,
@@ -357,8 +352,7 @@ async def addnewfiles(client: Bot, message: Message):
         'file_size': file_size,
         'link': link
     }
-    docs.append(data)
-
+    docs = [data]
     groupids = await findgroupid(channel_id)
     if groupids:
         for group_id in groupids:

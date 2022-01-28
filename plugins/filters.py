@@ -31,20 +31,18 @@ async def filter(client: Bot, message: Message):
     if re.findall("((^\/|^,|^!|^\.|^[\U0001F600-\U000E007F]).*)", message.text):
         return
 
-    if 2 < len(message.text) < 50:    
-        btn = []
-
+    if 2 < len(message.text) < 50:
         group_id = message.chat.id
         name = message.text
 
         filenames, links = await searchquery(group_id, name)
-        if filenames and links:
-            for filename, link in zip(filenames, links):
-                btn.append(
-                    [InlineKeyboardButton(text=f"{filename}",url=f"{link}")]
-                )
-        else:
+        if not filenames or not links:
             return
+
+        btn = [
+            [InlineKeyboardButton(text=f"{filename}", url=f"{link}")]
+            for filename, link in zip(filenames, links)
+        ]
 
         if not btn:
             return
@@ -72,7 +70,7 @@ async def filter(client: Bot, message: Message):
 
         buttons.append(
             [InlineKeyboardButton(text="NEXT ⏩",callback_data=f"next_0_{keyword}")]
-        )    
+        )
         buttons.append(
             [InlineKeyboardButton(text=f"📃 Pages 1/{data['total']}",callback_data="pages")]
         )
@@ -101,30 +99,20 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 buttons.append(
                     [InlineKeyboardButton("⏪ BACK", callback_data=f"back_{int(index)+1}_{keyword}")]
                 )
-                buttons.append(
-                    [InlineKeyboardButton(f"📃 Pages {int(index)+2}/{data['total']}", callback_data="pages")]
-                )
-
-                await query.edit_message_reply_markup( 
-                    reply_markup=InlineKeyboardMarkup(buttons)
-                )
-                return
             else:
                 buttons = data['buttons'][int(index)+1].copy()
 
                 buttons.append(
                     [InlineKeyboardButton("⏪ BACK", callback_data=f"back_{int(index)+1}_{keyword}"),InlineKeyboardButton("NEXT ⏩", callback_data=f"next_{int(index)+1}_{keyword}")]
                 )
-                buttons.append(
-                    [InlineKeyboardButton(f"📃 Pages {int(index)+2}/{data['total']}", callback_data="pages")]
-                )
+            buttons.append(
+                [InlineKeyboardButton(f"📃 Pages {int(index)+2}/{data['total']}", callback_data="pages")]
+            )
 
-                await query.edit_message_reply_markup( 
-                    reply_markup=InlineKeyboardMarkup(buttons)
-                )
-                return
-
-
+            await query.edit_message_reply_markup( 
+                reply_markup=InlineKeyboardMarkup(buttons)
+            )
+            return
         elif query.data.startswith("back"):
             await query.answer()
             ident, index, keyword = query.data.split("_")
@@ -136,30 +124,20 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 buttons.append(
                     [InlineKeyboardButton("NEXT ⏩", callback_data=f"next_{int(index)-1}_{keyword}")]
                 )
-                buttons.append(
-                    [InlineKeyboardButton(f"📃 Pages {int(index)}/{data['total']}", callback_data="pages")]
-                )
-
-                await query.edit_message_reply_markup( 
-                    reply_markup=InlineKeyboardMarkup(buttons)
-                )
-                return   
             else:
                 buttons = data['buttons'][int(index)-1].copy()
 
                 buttons.append(
                     [InlineKeyboardButton("⏪ BACK", callback_data=f"back_{int(index)-1}_{keyword}"),InlineKeyboardButton("NEXT ⏩", callback_data=f"next_{int(index)-1}_{keyword}")]
                 )
-                buttons.append(
-                    [InlineKeyboardButton(f"📃 Pages {int(index)}/{data['total']}", callback_data="pages")]
-                )
+            buttons.append(
+                [InlineKeyboardButton(f"📃 Pages {int(index)}/{data['total']}", callback_data="pages")]
+            )
 
-                await query.edit_message_reply_markup( 
-                    reply_markup=InlineKeyboardMarkup(buttons)
-                )
-                return
-
-
+            await query.edit_message_reply_markup( 
+                reply_markup=InlineKeyboardMarkup(buttons)
+            )
+            return
         elif query.data == "pages":
             await query.answer()
 
@@ -212,7 +190,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         elif query.data == "delallconfirm":
             await query.message.delete()
             await deleteallfilters(client, query.message)
-        
+
         elif query.data == "delallcancel":
             await query.message.reply_to_message.delete()
             await query.message.delete()

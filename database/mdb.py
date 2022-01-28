@@ -62,17 +62,13 @@ async def ifexists(channel_id, group_id):
     query = mycol.count_documents( {"_id": group_id} )
     if query == 0:
         return False
-    else:
-        ids = mycol.find( {'_id': group_id} )
-        channelids = []
-        for id in ids:
-            for chid in id['channel_details']:
-                channelids.append(chid['channel_id'])
+    ids = mycol.find( {'_id': group_id} )
+    channelids = []
+    for id in ids:
+        for chid in id['channel_details']:
+            channelids.append(chid['channel_id'])
 
-        if channel_id in channelids:
-            return True
-        else:
-            return False
+    return channel_id in channelids
 
 
 async def deletefiles(channel_id, channel_name, group_id, group_name):
@@ -117,7 +113,7 @@ async def deletegroupcol(group_id):
     try:    
         mycol.drop()
     except Exception as e:
-        print(f"delall group col drop error - {str(e)}")
+        print(f'delall group col drop error - {e}')
         return 2
     else:
         return 0
@@ -129,15 +125,14 @@ async def channeldetails(group_id):
     query = mycol.count_documents( {"_id": group_id} )
     if query == 0:
         return False
-    else:
-        ids = mycol.find( {'_id': group_id} )
-        chdetails = []
-        for id in ids:
-            for chid in id['channel_details']:
-                chdetails.append(
-                    str(chid['channel_name']) + " ( <code>" + str(chid['channel_id']) + "</code> )"
-                )
-            return chdetails
+    ids = mycol.find( {'_id': group_id} )
+    chdetails = []
+    for id in ids:
+        for chid in id['channel_details']:
+            chdetails.append(
+                str(chid['channel_name']) + " ( <code>" + str(chid['channel_id']) + "</code> )"
+            )
+        return chdetails
 
 
 async def countfilters(group_id):
@@ -145,10 +140,7 @@ async def countfilters(group_id):
 
     query = mycol.count()
 
-    if query == 0:
-        return False
-    else:
-        return query
+    return False if query == 0 else query
 
         
 async def findgroupid(channel_id):
